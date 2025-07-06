@@ -1,0 +1,9 @@
+bin/
+obj/
+*.db
+*.sqlite
+appsettings.Production.json
+appsettings.Development.json
+.env
+.vs/
+Docker/

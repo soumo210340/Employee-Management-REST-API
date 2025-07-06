@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Employee Management</h1>
+        <form id="loginForm">
+            <h2 class="text-center">Login</h2>
+            <label>Username <input type="text" id="username" required></label>
+            <label>Password <input type="password" id="password" required></label>
+            <button type="submit">Login</button>
+            <button type="button" id="showRegister">Register</button>
+        </form>
+        <form id="employeeForm" class="d-none">
+            <h2>Add Employee</h2>
+            <label>First Name <input type="text" id="firstName" required></label>
+            <label>Last Name <input type="text" id="lastName" required></label>
+            <label>Email <input type="email" id="email" required></label>
+            <label>Phone <input type="text" id="phone"></label>
+            <label>Department <input type="text" id="department"></label>
+            <label>Position <input type="text" id="position"></label>
+            <label>Salary <input type="number" id="salary" required></label>
+            <label>Hire Date <input type="date" id="hireDate" required></label>
+            <button type="submit">Add Employee</button>
+        </form>
+        <form id="registerForm" class="d-none">
+            <h2 class="text-center">Employee Registration</h2>
+            <label>Username <input type="text" id="regUsername" required></label>
+            <label>Email <input type="email" id="regEmail" required></label>
+            <label>Password <input type="password" id="regPassword" required></label>
+            <label>First Name <input type="text" id="regFirstName" required></label>
+            <label>Last Name <input type="text" id="regLastName" required></label>
+            <label>Phone <input type="text" id="regPhone"></label>
+            <label>Department <input type="text" id="regDepartment"></label>
+            <label>Position <input type="text" id="regPosition"></label>
+            <label>Salary <input type="number" id="regSalary" required></label>
+            <label>Hire Date <input type="date" id="regHireDate" required></label>
+            <button type="submit">Register Employee</button>
+            <button type="button" id="backToLogin">Back to Login</button>
+        </form>
+        <div class="employee-list" id="employeeList"></div>
+    </div>
+    <script>
+        let token = '';
+        document.getElementById('loginForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (res.ok && data.token) {
+                token = data.token;
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('employeeForm').style.display = 'block';
+                loadEmployees();
+            } else {
+                alert(data.message || 'Login failed');
+            }
+        };
+        document.getElementById('employeeForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const employee = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                department: document.getElementById('department').value,
+                position: document.getElementById('position').value,
+                salary: parseFloat(document.getElementById('salary').value),
+                hireDate: document.getElementById('hireDate').value
+            };
+            const res = await fetch('/api/employees', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(employee)
+            });
+            if (res.ok) {
+                loadEmployees();
+                e.target.reset();
+            } else {
+                const data = await res.json();
+                alert(data.message || 'Failed to add employee');
+            }
+        };
+        document.getElementById('showRegister').onclick = function() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        };
+        document.getElementById('backToLogin').onclick = function() {
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+        };
+        document.getElementById('registerForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const regData = {
+                username: document.getElementById('regUsername').value,
+                email: document.getElementById('regEmail').value,
+                password: document.getElementById('regPassword').value,
+                firstName: document.getElementById('regFirstName').value,
+                lastName: document.getElementById('regLastName').value,
+                phone: document.getElementById('regPhone').value,
+                department: document.getElementById('regDepartment').value,
+                position: document.getElementById('regPosition').value,
+                salary: parseFloat(document.getElementById('regSalary').value),
+                hireDate: document.getElementById('regHireDate').value
+            };
+            const res = await fetch('/api/employees/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(regData)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert('Employee registered successfully!');
+                document.getElementById('registerForm').reset();
+                document.getElementById('registerForm').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+            } else {
+                alert(data.message || 'Registration failed');
+            }
+        };
+        async function loadEmployees() {
+            const res = await fetch('/api/employees', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const list = document.getElementById('employeeList');
+            if (res.ok) {
+                const employees = await res.json();
+                list.innerHTML = employees.map(emp => `<div class="employee"><b>${emp.firstName} ${emp.lastName}</b><br>Email: ${emp.email}<br>Department: ${emp.department}<br>Position: ${emp.position}</div>`).join('');
+            } else {
+                list.innerHTML = '<p>Could not load employees.</p>';
+            }
+        }
+    </script>
+</body>
+</html>

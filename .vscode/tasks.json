@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Run EmployeeManagement API",
+			"command": "dotnet run --project \"c:\\Users\\ASUS\\OneDrive\\Desktop\\Employee Management REST API\\EmployeeManagement\\EmployeeManagement.csproj\"",
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}
