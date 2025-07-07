@@ -1,19 +1,139 @@
 # Employee Management REST API
 
-A production-ready ASP.NET Core Web API for managing employees, authentication, and role-based access control.
+A secure, modern Employee Management system built with ASP.NET Core, MySQL, and a clean HTML/CSS/JS frontend.
+
+---
 
 ## Features
-- JWT Authentication
-- CRUD for Employees
-- Role-based Authorization
-- Swagger UI
+
+- **User Authentication:**  
+  - JWT-based login and registration.
+  - Role-based access (Admin/User).
+
+- **Employee Management:**  
+  - Admins can add, edit, and delete employees.
+  - All authenticated users can view employee lists.
+
+- **Frontend:**  
+  - Responsive, modern UI using HTML, CSS, and vanilla JS.
+  - Login and registration forms.
+  - Employee list and add employee form.
+
+- **Database:**  
+  - MySQL backend.
+  - Entity Framework Core for ORM.
+
+- **Security:**  
+  - Endpoints protected with `[Authorize]` and role checks.
+  - Passwords hashed with BCrypt.
+
+---
 
 ## Getting Started
 
-1. Clone the repository
-2. Update connection strings in `appsettings.json`
-3. Run database migrations
-4. Start the API
+### Prerequisites
 
-## File Structure
-See the project for a detailed file and folder structure.
+- [.NET 8 SDK](https://dotnet.microsoft.com/download)
+- [MySQL Server](https://dev.mysql.com/downloads/mysql/)
+- (Optional) [MySQL Workbench](https://dev.mysql.com/downloads/workbench/)
+
+### Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone <your-repo-url>
+   cd Employee-Management-REST-API
+   ```
+
+2. **Configure MySQL:**
+   - Ensure MySQL is running.
+   - Create the database and user (if not already done):
+     ```sql
+     CREATE DATABASE IF NOT EXISTS EmployeeDb;
+     CREATE USER 'soumyadeep'@'localhost' IDENTIFIED BY '26558925';
+     GRANT ALL PRIVILEGES ON EmployeeDb.* TO 'soumyadeep'@'localhost';
+     FLUSH PRIVILEGES;
+     ```
+
+3. **Update Connection String:**
+   - In `EmployeeManagement/appsettings.json` and `appsettings.Development.json`:
+     ```json
+     "DefaultConnection": "Server=localhost;Database=EmployeeDb;User=soumyadeep;Password=26558925;"
+     ```
+
+4. **Restore and Build:**
+   ```bash
+   dotnet restore
+   dotnet build
+   ```
+
+5. **Apply Migrations (if needed):**
+   ```bash
+   dotnet ef database update --project EmployeeManagement/EmployeeManagement.csproj
+   ```
+
+6. **Run the Project:**
+   ```bash
+   dotnet run --project EmployeeManagement/EmployeeManagement.csproj
+   ```
+
+7. **Access the App:**
+   - Frontend: [http://localhost:5000/index.html](http://localhost:5000/index.html)
+   - Swagger API: [http://localhost:5000/swagger](http://localhost:5000/swagger)
+
+---
+
+## Usage
+
+### Authentication
+
+- **Register:**  
+  - Use the "Register" button on the login page to create a new user or employee account.
+- **Login:**  
+  - Enter your username and password to log in and access employee features.
+
+### Employee Management
+
+- **Admins:**  
+  - Can add, edit, and delete employees.
+- **Users:**  
+  - Can view the employee list.
+
+### API Endpoints
+
+- `POST /api/auth/register` — Register a new user
+- `POST /api/auth/login` — Login and receive JWT
+- `GET /api/employees` — Get all employees (auth required)
+- `POST /api/employees/register` — Register a new employee (admin only)
+- `POST /api/employees` — Add employee (admin only)
+- `PUT /api/employees/{id}` — Update employee (admin only)
+- `DELETE /api/employees/{id}` — Delete employee (admin only)
+
+---
+
+## Frontend Tech
+
+- **HTML5**
+- **CSS3** (dedicated `style.css` for modern, responsive design)
+- **Vanilla JavaScript**
+
+---
+
+## Customization
+
+- **To make the API public:**  
+  - Change `applicationUrl` in `launchSettings.json` to `0.0.0.0`.
+  - Open firewall ports 5000/5001.
+  - Use your machine's IP address for access on your network.
+
+---
+
+## License
+
+MIT License
+
+---
+
+## Credits
+
+- Built with [ASP.NET Core](https://dotnet.microsoft.com/), [Pomelo.EntityFrameworkCore.MySql](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql), and [MySQL](https://www.mysql.com/).
