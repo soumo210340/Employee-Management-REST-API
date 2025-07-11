@@ -1,13 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using EmployeeManagement.Services;
 using EmployeeManagement.DTOs;
-using Microsoft.AspNetCore.Authorization;
+using EmployeeManagement.Services;
+using System;
+using System.Threading.Tasks;
 
 namespace EmployeeManagement.Controllers
 {
-    // Handles authentication endpoints
-    // /api/auth/login - User login
-    // /api/auth/register - User registration
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
@@ -19,32 +17,40 @@ namespace EmployeeManagement.Controllers
             _authService = authService;
         }
 
-        // POST: api/auth/login
         [HttpPost("login")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            try
+            {
+                var token = await _authService.LoginAsync(dto);
+                if (string.IsNullOrEmpty(token))
+                    return Unauthorized(new { message = "Invalid username or password" });
 
-            var token = await _authService.LoginAsync(loginDto);
-            if (string.IsNullOrEmpty(token))
-                return Unauthorized(new { Message = "Invalid username or password." });
-            return Ok(new { Token = token });
+                return Ok(new { token });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Login exception: " + ex.Message);
+                return StatusCode(500, new { error = "Server error", detail = ex.Message });
+            }
         }
 
-        // POST: api/auth/register
         [HttpPost("register")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            try
+            {
+                var result = await _authService.RegisterAsync(dto);
+                if (!result)
+                    return BadRequest(new { message = "Username or email already exists" });
 
-            var result = await _authService.RegisterAsync(registerDto);
-            if (!result)
-                return BadRequest(new { Message = "Username or email already exists." });
-            return Ok(new { Message = "Registration successful." });
+                return Ok(new { message = "Registration successful" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Register exception: " + ex.Message);
+                return StatusCode(500, new { error = "Server error", detail = ex.Message });
+            }
         }
     }
 }

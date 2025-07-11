@@ -1,0 +1,71 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 32px 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+h1 {
+    text-align: center;
+    color: #2d3a4b;
+}
+h2 {
+    color: #3a4d63;
+    margin-top: 24px;
+}
+input[type="text"], input[type="password"], input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #cfd8dc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+button {
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 8px;
+    font-size: 1em;
+}
+button.logout-btn {
+    float: right;
+    background: #e53935;
+}
+button:hover {
+    background: #1565c0;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+th, td {
+    border: 1px solid #e0e0e0;
+    padding: 8px;
+    text-align: left;
+}
+th {
+    background: #f5f5f5;
+}
+.error {
+    color: #e53935;
+    margin-top: 8px;
+}
+a {
+    color: #1976d2;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}

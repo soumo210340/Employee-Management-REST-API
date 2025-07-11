@@ -1,4 +1,3 @@
-
 namespace EmployeeManagement.Models
 {
     public class Employee
@@ -15,5 +14,7 @@ namespace EmployeeManagement.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
+        public string Username { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
     }
 }

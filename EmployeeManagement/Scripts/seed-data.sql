@@ -1,1 +1,3 @@
 -- SQL script to insert sample data
+INSERT INTO Employees (Username, Email, PasswordHash, FirstName, LastName, Phone, Department, Position, Salary, HireDate, CreatedAt, UpdatedAt, IsActive)
+VALUES ('admin', 'admin@example.com', '$2a$11$yOCPB6Ik7xt/RNShV7CE8.8U72LZ5vYYNRIY1b3qvvM1RrsUiwjeS', 'Admin', 'User', '', 'Administration', 'Administrator', 0, UTC_TIMESTAMP(), UTC_TIMESTAMP(), UTC_TIMESTAMP(), 1);

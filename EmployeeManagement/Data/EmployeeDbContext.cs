@@ -1,4 +1,3 @@
-
 using Microsoft.EntityFrameworkCore;
 using EmployeeManagement.Models;
 
@@ -9,7 +8,6 @@ namespace EmployeeManagement.Data
         public EmployeeDbContext(DbContextOptions<EmployeeDbContext> options) : base(options) { }
 
         public DbSet<Employee> Employees { get; set; }
-        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -25,18 +23,9 @@ namespace EmployeeManagement.Data
                 entity.Property(e => e.Position).HasMaxLength(50);
                 entity.Property(e => e.Salary).HasPrecision(10, 2);
                 entity.HasIndex(e => e.Email).IsUnique();
-            });
-
-            // User configuration
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity.HasKey(e => e.Id);
                 entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
-                entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.PasswordHash).IsRequired();
-                entity.Property(e => e.Role).HasMaxLength(20);
                 entity.HasIndex(e => e.Username).IsUnique();
-                entity.HasIndex(e => e.Email).IsUnique();
             });
 
             base.OnModelCreating(modelBuilder);

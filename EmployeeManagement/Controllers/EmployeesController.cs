@@ -163,7 +163,7 @@ namespace EmployeeManagement.Controllers
         /// <returns>The created employee.</returns>
         // POST: api/employees/register
         [HttpPost("register")]
-        [Authorize(Roles = "Admin")]
+        [AllowAnonymous] // Allow public registration
         public async Task<IActionResult> RegisterEmployee([FromBody] RegisterEmployeeDto registerEmployeeDto)
         {
             if (!ModelState.IsValid)

@@ -30,6 +30,7 @@
         </form>
         <form id="registerForm" class="d-none">
             <h2 class="text-center">Employee Registration</h2>
+            <div id="registerSuccess" style="display:none;color:green;font-weight:bold;text-align:center;margin-bottom:1rem;">Registration successful!</div>
             <label>Username <input type="text" id="regUsername" required></label>
             <label>Email <input type="email" id="regEmail" required></label>
             <label>Password <input type="password" id="regPassword" required></label>
@@ -121,12 +122,19 @@
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                 body: JSON.stringify(regData)
             });
-            const data = await res.json();
+            let data = {};
+            const contentType = res.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                data = await res.json();
+            }
             if (res.ok) {
-                alert('Employee registered successfully!');
-                document.getElementById('registerForm').reset();
-                document.getElementById('registerForm').style.display = 'none';
-                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('registerSuccess').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('registerSuccess').style.display = 'none';
+                    document.getElementById('registerForm').reset();
+                    document.getElementById('registerForm').style.display = 'none';
+                    document.getElementById('loginForm').style.display = 'block';
+                }, 1500);
             } else {
                 alert(data.message || 'Registration failed');
             }

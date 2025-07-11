@@ -25,30 +25,39 @@ namespace EmployeeManagement.Services
 
         public async Task<string> LoginAsync(LoginDto loginDto)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loginDto.Username);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Username == loginDto.Username);
+            if (employee == null || !employee.IsActive || !BCrypt.Net.BCrypt.Verify(loginDto.Password, employee.PasswordHash))
                 return string.Empty;
-            var token = GenerateJwtToken(user);
+            var token = GenerateJwtToken(employee);
             return token;
         }
 
         public async Task<bool> RegisterAsync(RegisterDto registerDto)
         {
-            if (await _context.Users.AnyAsync(u => u.Username == registerDto.Username || u.Email == registerDto.Email))
+            if (await _context.Employees.AnyAsync(e => e.Username == registerDto.Username || e.Email == registerDto.Email))
                 return false;
-            var user = new User
+            var employee = new Employee
             {
                 Username = registerDto.Username,
                 Email = registerDto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
-                Role = registerDto.Role
+                FirstName = string.Empty,
+                LastName = string.Empty,
+                Phone = string.Empty,
+                Department = string.Empty,
+                Position = string.Empty,
+                Salary = 0,
+                HireDate = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                IsActive = true
             };
-            _context.Users.Add(user);
+            _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
             return true;
         }
 
-        private string GenerateJwtToken(User user)
+        private string GenerateJwtToken(Employee employee)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var secretKey = jwtSettings["SecretKey"];
@@ -60,9 +69,9 @@ namespace EmployeeManagement.Services
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.NameIdentifier, employee.Id.ToString()),
+                new Claim(ClaimTypes.Name, employee.Username ?? string.Empty),
+                // Optionally add more claims here, e.g. role if needed
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
@@ -72,7 +81,7 @@ namespace EmployeeManagement.Services
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.UtcNow.AddHours(1), // Use UtcNow for token expiration
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

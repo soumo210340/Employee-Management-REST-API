@@ -127,23 +127,9 @@ namespace EmployeeManagement.Services
 
         public async Task<EmployeeDto> RegisterEmployeeAsync(RegisterEmployeeDto dto)
         {
-            // Check for existing username/email in Users
-            if (await _context.Users.AnyAsync(u => u.Username == dto.Username || u.Email == dto.Email))
+            // Check for existing username/email in Employees
+            if (await _context.Employees.AnyAsync(e => e.Username == dto.Username || e.Email == dto.Email))
                 throw new System.Exception("Username or email already exists.");
-            // Check for existing email in Employees
-            if (await _context.Employees.AnyAsync(e => e.Email == dto.Email))
-                throw new System.Exception("Employee email already exists.");
-
-            // Create User
-            var user = new User
-            {
-                Username = dto.Username,
-                Email = dto.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                Role = "User"
-            };
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
 
             // Create Employee
             var employee = new Employee
@@ -155,7 +141,12 @@ namespace EmployeeManagement.Services
                 Department = dto.Department,
                 Position = dto.Position,
                 Salary = dto.Salary,
-                HireDate = dto.HireDate
+                HireDate = dto.HireDate,
+                Username = dto.Username,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                CreatedAt = System.DateTime.UtcNow,
+                UpdatedAt = System.DateTime.UtcNow,
+                IsActive = true
             };
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
