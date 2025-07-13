@@ -1,6 +1,7 @@
 // Simple frontend logic for login, registration, and employee management
-const apiBase = "http://localhost:5000/api";
-let jwtToken = null;
+const apiBase = "https://localhost:5001/api"; // ✅ must use https!
+
+let jwtToken = "eyJhbGciOiJIUzI1NiIs..."; // Temporary hardcoded token for testing
 
 function showRegister() {
     document.getElementById('login-form').style.display = 'none';
@@ -34,6 +35,7 @@ async function login() {
         if (!res.ok) throw new Error('Login failed');
         const data = await res.json();
         jwtToken = data.token;
+        console.log("Logged in with token:", jwtToken);
         showMain();
     } catch (err) {
         alert('Login failed: Invalid username or password.');

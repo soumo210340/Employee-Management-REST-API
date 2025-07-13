@@ -71,7 +71,7 @@ namespace EmployeeManagement.Services
             {
                 new Claim(ClaimTypes.NameIdentifier, employee.Id.ToString()),
                 new Claim(ClaimTypes.Name, employee.Username ?? string.Empty),
-                // Optionally add more claims here, e.g. role if needed
+                new Claim(ClaimTypes.Role, "Admin")
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));

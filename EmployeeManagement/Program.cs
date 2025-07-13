@@ -16,6 +16,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// Enable CORS for frontend running on different origin
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        builder =>
+        {
+            builder.WithOrigins("http://127.0.0.1:5500")
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials();
+        });
+});
+
 // Swagger configuration with JWT support and login example
 builder.Services.AddSwaggerGen(c =>
 {
@@ -102,6 +115,9 @@ app.UseStaticFiles(new StaticFileOptions {
     ),
     RequestPath = ""
 });
+
+// Enable CORS for frontend
+app.UseCors("AllowFrontend");
 
 // Global exception handling middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
