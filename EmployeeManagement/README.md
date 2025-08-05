@@ -1,170 +1,67 @@
 # Employee Management REST API
 
-A secure, modern Employee Management system built with ASP.NET Core, MySQL, and a clean HTML/CSS/JS frontend.
-
----
+## Overview
+The Employee Management REST API is a .NET Core application designed to manage employee data. It provides endpoints for CRUD operations and integrates seamlessly with a Bootstrap-based frontend.
 
 ## Features
+- **Authentication**: Login and registration functionality.
+- **Employee Management**: Add, view, update, and delete employees.
+- **Frontend Integration**: A responsive HTML page consuming the API.
+- **OOP Principles**: Backend and frontend refactored for modularity and maintainability.
 
-- **User Authentication:**  
-  - JWT-based login and registration.
-  - Role-based access (Admin/User).
-  - Secure password hashing with BCrypt.
-  - Registration and login endpoints for both users and employees.
+## Technologies Used
+- **Backend**: .NET Core, Entity Framework Core, MySQL.
+- **Frontend**: HTML, CSS (Bootstrap), JavaScript.
+- **Authentication**: JWT.
 
-- **Employee Management:**  
-  - Admins can add, edit, and delete employees.
-  - All authenticated users can view employee lists.
-  - Employee registration creates both a User and Employee record.
-  - Employee details: first name, last name, email, phone, department, position, salary, hire date.
-
-- **Frontend:**  
-  - Responsive, modern UI using HTML, CSS, and vanilla JS.
-  - Login and registration forms with navigation.
-  - Employee list and add employee form.
-  - Distinct button styles and user-friendly design.
-
-- **Database:**  
-  - MySQL backend.
-  - Entity Framework Core for ORM.
-  - Database seeding and migration support.
-
-- **Security:**  
-  - Endpoints protected with `[Authorize]` and role checks.
-  - Error handling and logging in controllers.
-  - XML documentation for API endpoints.
-
-- **API:**
-  - RESTful endpoints for authentication and employee management.
-  - Admin-only restrictions for sensitive operations.
-  - Swagger/OpenAPI documentation available.
-
-- **Deployment:**
-  - Easily configurable for public or local network access.
-  - Docker support (see Docker folder).
-
----
-
-## Getting Started
-
+## Setup Instructions
 ### Prerequisites
+- .NET SDK
+- MySQL Server
+- Node.js (optional for additional tooling)
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- [MySQL Server](https://dev.mysql.com/downloads/mysql/)
-- (Optional) [MySQL Workbench](https://dev.mysql.com/downloads/workbench/)
-
-### Setup
-
-1. **Clone the repository:**
+### Steps
+1. Clone the repository:
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/soumo210340/Employee-Management-REST-API.git
+   ```
+2. Navigate to the project directory:
+   ```bash
    cd Employee-Management-REST-API
    ```
-
-2. **Configure MySQL:**
-   - Ensure MySQL is running.
-   - Create the database and user (if not already done):
-     ```sql
-     CREATE DATABASE IF NOT EXISTS EmployeeDb;
-     CREATE USER 'soumyadeep'@'localhost' IDENTIFIED BY '26558925';
-     GRANT ALL PRIVILEGES ON EmployeeDb.* TO 'soumyadeep'@'localhost';
-     FLUSH PRIVILEGES;
-     ```
-
-3. **Update Connection String:**
-   - In `EmployeeManagement/appsettings.json` and `appsettings.Development.json`:
-     ```json
-     "DefaultConnection": "Server=localhost;Database=EmployeeDb;User=soumyadeep;Password=26558925;"
-     ```
-
-4. **Restore and Build:**
+3. Update the connection string in `appsettings.json`:
+   ```json
+   "ConnectionStrings": {
+       "DefaultConnection": "Server=localhost;Database=EmployeeDB;User=soumyadeep;Password=26558925;"
+   }
+   ```
+4. Apply migrations:
    ```bash
-   dotnet restore
-   dotnet build
+   dotnet ef database update
+   ```
+5. Run the application:
+   ```bash
+   dotnet run
    ```
 
-5. **Apply Migrations (if needed):**
-   ```bash
-   dotnet ef database update --project EmployeeManagement/EmployeeManagement.csproj
-   ```
-
-6. **Run the Project:**
-   ```bash
-   dotnet run --project EmployeeManagement/EmployeeManagement.csproj
-   ```
-
-7. **Access the App:**
-   - Frontend: [http://localhost:5000/index.html](http://localhost:5000/index.html)
-   - Swagger API: [http://localhost:5000/swagger](http://localhost:5000/swagger)
-
----
-
-## Usage
-
+## API Endpoints
 ### Authentication
+- **POST** `/api/auth/login`: Login.
+- **POST** `/api/auth/register`: Register.
 
-- **Register:**  
-  - Use the "Register" button on the login page to create a new user or employee account.
-- **Login:**  
-  - Enter your username and password to log in and access employee features.
+### Employees
+- **GET** `/api/employees`: Get all employees.
+- **POST** `/api/employees`: Add a new employee.
+- **PUT** `/api/employees/{id}`: Update an employee.
+- **DELETE** `/api/employees/{id}`: Delete an employee.
 
-### Employee Management
+## Frontend Usage
+1. Open `index.html` in a browser.
+2. Use the login or register forms to authenticate.
+3. Manage employees using the table and forms provided.
 
-- **Admins:**  
-  - Can add, edit, and delete employees.
-- **Users:**  
-  - Can view the employee list.
-
-### API Endpoints
-
-- `POST /api/auth/register` — Register a new user
-- `POST /api/auth/login` — Login and receive JWT
-- `GET /api/employees` — Get all employees (auth required)
-- `POST /api/employees/register` — Register a new employee (admin only)
-- `POST /api/employees` — Add employee (admin only)
-- `PUT /api/employees/{id}` — Update employee (admin only)
-- `DELETE /api/employees/{id}` — Delete employee (admin only)
-
----
-
-## Frontend Tech
-
-- **HTML5**
-- **CSS3** (dedicated `style.css` for modern, responsive design)
-- **Vanilla JavaScript**
-
----
-
-## Customization
-
-- **To make the API public:**  
-  - Change `applicationUrl` in `launchSettings.json` to `0.0.0.0`.
-  - Open firewall ports 5000/5001.
-  - Use your machine's IP address for access on your network.
-
----
+## Contribution
+Feel free to fork the repository and submit pull requests for improvements.
 
 ## License
-
-MIT License
-
----
-
-## Credits
-
-- Built with [ASP.NET Core](https://dotnet.microsoft.com/), [Pomelo.EntityFrameworkCore.MySql](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql), and [MySQL](https://www.mysql.com/).
-
----
-
-## Test Login
-
-You can use the following credentials for testing (if seeded or registered):
-
-- **Username:** admin
-- **Password:** admin123
-
-If these do not work, register a new user using the registration form on the login page.
-
----
-
-> **Note:** User authentication is currently not stored in the `employees` table. If you want to store authentication (username, password, role) in the `employees` table, you will need to add columns such as `Username`, `PasswordHash`, and `Role` to the table and update your backend logic accordingly.
+This project is licensed under the MIT License.
