@@ -1,0 +1,18 @@
+# Ignore build output
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.vs/
+EmployeeManagement/wwwroot/
+# Ignore local config
+appsettings.Development.json
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+# Ignore Rider project files
+.idea/
+# Ignore Visual Studio Code settings
+.vscode/

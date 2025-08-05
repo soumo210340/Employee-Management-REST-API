@@ -1,6 +1,5 @@
 // Simple frontend logic for login, registration, and employee management
 const apiBase = "https://localhost:5001/api"; // ✅ must use https!
-
 let jwtToken = "eyJhbGciOiJIUzI1NiIs..."; // Temporary hardcoded token for testing
 
 function showRegister() {
@@ -122,3 +121,81 @@ async function deleteEmployee(id) {
         alert('Failed to delete employee.');
     }
 }
+
+class EmployeeManager {
+    constructor(apiUrl) {
+        this.apiUrl = apiUrl;
+    }
+
+    fetchEmployees() {
+        fetch(`${this.apiUrl}/employees`)
+            .then(response => response.json())
+            .then(data => this.renderEmployeeTable(data))
+            .catch(error => console.error('Error fetching employees:', error));
+    }
+
+    renderEmployeeTable(employees) {
+        const tbody = document.querySelector('#employee-table tbody');
+        tbody.innerHTML = '';
+        employees.forEach(employee => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${employee.id}</td>
+                <td>${employee.firstName} ${employee.lastName}</td>
+                <td>${employee.email}</td>
+                <td>${employee.department}</td>
+                <td>${employee.position}</td>
+                <td><button onclick="employeeManager.deleteEmployee(${employee.id})">Delete</button></td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    addEmployee(event) {
+        event.preventDefault();
+        const employee = {
+            firstName: document.getElementById('emp-firstname').value,
+            lastName: document.getElementById('emp-lastname').value,
+            email: document.getElementById('emp-email').value,
+            department: document.getElementById('emp-department').value,
+            position: document.getElementById('emp-position').value
+        };
+
+        fetch(`${this.apiUrl}/employees`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(employee)
+        })
+        .then(response => {
+            if (response.ok) {
+                this.fetchEmployees();
+                document.getElementById('add-employee-form').reset();
+            } else {
+                console.error('Error adding employee:', response.statusText);
+            }
+        })
+        .catch(error => console.error('Error adding employee:', error));
+    }
+
+    deleteEmployee(id) {
+        fetch(`${this.apiUrl}/employees/${id}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (response.ok) {
+                this.fetchEmployees();
+            } else {
+                console.error('Error deleting employee:', response.statusText);
+            }
+        })
+        .catch(error => console.error('Error deleting employee:', error));
+    }
+}
+
+const employeeManager = new EmployeeManager('/api');
+
+document.getElementById('add-employee-form').addEventListener('submit', event => employeeManager.addEmployee(event));
+
+employeeManager.fetchEmployees();

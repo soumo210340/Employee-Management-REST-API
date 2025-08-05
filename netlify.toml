@@ -1,0 +1,8 @@
+[build]
+  publish = "EmployeeManagement/wwwroot"
+  command = "dotnet publish -c Release -o EmployeeManagement/wwwroot"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

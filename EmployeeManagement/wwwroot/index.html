@@ -8,6 +8,7 @@
 </head>
 <body>
     <div class="container">
+        <button id="darkModeToggle" style="position:absolute;top:1.5rem;right:2rem;font-size:1.4rem;background:none;border:none;cursor:pointer;" title="Toggle dark mode">🌙</button>
         <h1>Employee Management</h1>
         <form id="loginForm">
             <h2 class="text-center">Login</h2>
@@ -46,110 +47,7 @@
         </form>
         <div class="employee-list" id="employeeList"></div>
     </div>
-    <script>
-        let token = '';
-        document.getElementById('loginForm').onsubmit = async function(e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-            const data = await res.json();
-            if (res.ok && data.token) {
-                token = data.token;
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('employeeForm').style.display = 'block';
-                loadEmployees();
-            } else {
-                alert(data.message || 'Login failed');
-            }
-        };
-        document.getElementById('employeeForm').onsubmit = async function(e) {
-            e.preventDefault();
-            const employee = {
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                department: document.getElementById('department').value,
-                position: document.getElementById('position').value,
-                salary: parseFloat(document.getElementById('salary').value),
-                hireDate: document.getElementById('hireDate').value
-            };
-            const res = await fetch('/api/employees', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify(employee)
-            });
-            if (res.ok) {
-                loadEmployees();
-                e.target.reset();
-            } else {
-                const data = await res.json();
-                alert(data.message || 'Failed to add employee');
-            }
-        };
-        document.getElementById('showRegister').onclick = function() {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('registerForm').style.display = 'block';
-        };
-        document.getElementById('backToLogin').onclick = function() {
-            document.getElementById('registerForm').style.display = 'none';
-            document.getElementById('loginForm').style.display = 'block';
-        };
-        document.getElementById('registerForm').onsubmit = async function(e) {
-            e.preventDefault();
-            const regData = {
-                username: document.getElementById('regUsername').value,
-                email: document.getElementById('regEmail').value,
-                password: document.getElementById('regPassword').value,
-                firstName: document.getElementById('regFirstName').value,
-                lastName: document.getElementById('regLastName').value,
-                phone: document.getElementById('regPhone').value,
-                department: document.getElementById('regDepartment').value,
-                position: document.getElementById('regPosition').value,
-                salary: parseFloat(document.getElementById('regSalary').value),
-                hireDate: document.getElementById('regHireDate').value
-            };
-            const res = await fetch('/api/employees/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                body: JSON.stringify(regData)
-            });
-            let data = {};
-            const contentType = res.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                data = await res.json();
-            }
-            if (res.ok) {
-                document.getElementById('registerSuccess').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('registerSuccess').style.display = 'none';
-                    document.getElementById('registerForm').reset();
-                    document.getElementById('registerForm').style.display = 'none';
-                    document.getElementById('loginForm').style.display = 'block';
-                }, 1500);
-            } else {
-                alert(data.message || 'Registration failed');
-            }
-        };
-        async function loadEmployees() {
-            const res = await fetch('/api/employees', {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const list = document.getElementById('employeeList');
-            if (res.ok) {
-                const employees = await res.json();
-                list.innerHTML = employees.map(emp => `<div class="employee"><b>${emp.firstName} ${emp.lastName}</b><br>Email: ${emp.email}<br>Department: ${emp.department}<br>Position: ${emp.position}</div>`).join('');
-            } else {
-                list.innerHTML = '<p>Could not load employees.</p>';
-            }
+    <script src="script.js"></script>
         }
     </script>
 </body>

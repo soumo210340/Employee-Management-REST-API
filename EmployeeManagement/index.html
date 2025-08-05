@@ -8,52 +8,58 @@
 </head>
 <body>
     <div class="container">
-        <h1>Employee Management System</h1>
-        <div id="auth-section">
-            <div id="login-form">
-                <h2>Login</h2>
-                <input type="text" id="login-username" placeholder="Username" required>
-                <input type="password" id="login-password" placeholder="Password" required>
-                <button onclick="login()">Login</button>
-                <p>Don't have an account? <a href="#" onclick="showRegister()">Register</a></p>
-                <div id="login-error" class="error"></div>
-            </div>
-            <div id="register-form" style="display:none;">
-                <h2>Register</h2>
-                <input type="text" id="register-username" placeholder="Username" required>
-                <input type="password" id="register-password" placeholder="Password" required>
-                <button onclick="register()">Register</button>
-                <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
-                <div id="register-error" class="error"></div>
-            </div>
-        </div>
-        <div id="main-section" style="display:none;">
-            <button onclick="logout()" class="logout-btn">Logout</button>
-            <h2>Employee List</h2>
-            <table id="employee-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Department</th>
-                        <th>Position</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <h2>Add Employee</h2>
-            <form id="add-employee-form">
-                <input type="text" id="emp-firstname" placeholder="First Name" required>
-                <input type="text" id="emp-lastname" placeholder="Last Name" required>
-                <input type="email" id="emp-email" placeholder="Email" required>
-                <input type="text" id="emp-department" placeholder="Department" required>
-                <input type="text" id="emp-position" placeholder="Position" required>
-                <button type="submit">Add Employee</button>
-            </form>
-            <div id="employee-error" class="error"></div>
-        </div>
+        <header>
+            <h1>Employee Management System</h1>
+        </header>
+        <main>
+            <section id="auth-section">
+                <div id="login-form">
+                    <h2>Login</h2>
+                    <input type="text" id="login-username" placeholder="Username" required>
+                    <input type="password" id="login-password" placeholder="Password" required>
+                    <button onclick="login()">Login</button>
+                    <p>Don't have an account? <a href="#" onclick="showRegister()">Register</a></p>
+                    <div id="login-error" class="error"></div>
+                </div>
+                <div id="register-form" style="display:none;">
+                    <h2>Register</h2>
+                    <input type="text" id="register-username" placeholder="Username" required>
+                    <input type="password" id="register-password" placeholder="Password" required>
+                    <button onclick="register()">Register</button>
+                    <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+                    <div id="register-error" class="error"></div>
+                </div>
+            </section>
+            <section id="main-section" style="display:none;">
+                <div class="header-row">
+                    <h2>Employee List</h2>
+                    <button onclick="logout()" class="logout-btn">Logout</button>
+                </div>
+                <table id="employee-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Department</th>
+                            <th>Position</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <h2>Add Employee</h2>
+                <form id="add-employee-form">
+                    <input type="text" id="emp-firstname" placeholder="First Name" required>
+                    <input type="text" id="emp-lastname" placeholder="Last Name" required>
+                    <input type="email" id="emp-email" placeholder="Email" required>
+                    <input type="text" id="emp-department" placeholder="Department" required>
+                    <input type="text" id="emp-position" placeholder="Position" required>
+                    <button type="submit">Add Employee</button>
+                </form>
+                <div id="employee-error" class="error"></div>
+            </section>
+        </main>
     </div>
     <script src="script.js"></script>
 </body>

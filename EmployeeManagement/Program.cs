@@ -10,183 +10,174 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.IO;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-
-// Enable CORS for frontend running on different origin
-builder.Services.AddCors(options =>
+public class EmployeeManagementApp
 {
-    options.AddPolicy("AllowFrontend",
-        builder =>
-        {
-            builder.WithOrigins("http://127.0.0.1:5500")
-                   .AllowAnyHeader()
-                   .AllowAnyMethod()
-                   .AllowCredentials();
-        });
-});
+    private readonly WebApplication _app;
 
-// Swagger configuration with JWT support and login example
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Employee Management API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    public EmployeeManagementApp(WebApplication app)
     {
-        Description = "Enter: Bearer {your JWT token}\n\nExample: Bearer eyJhbGciOiJIUzI1NiIs...",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+        _app = app;
+    }
+
+    public void ConfigureServices(WebApplicationBuilder builder)
     {
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddCors(options =>
         {
-            new OpenApiSecurityScheme
+            options.AddPolicy("AllowFrontend", policyBuilder =>
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
-    });
-});
-
-// Database configuration
-builder.Services.AddDbContext<EmployeeDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-    ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
-
-// JWT Configuration
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"];
-if (string.IsNullOrEmpty(secretKey))
-    throw new InvalidOperationException("JWT SecretKey is missing in configuration.");
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.RequireHttpsMetadata = false; // Simplify testing
-        options.SaveToken = true;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
-        };
-    });
-
-builder.Services.AddAuthorization();
-
-// Register services
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-
-// Add logging
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddDebug();
-
-// Add basic health check (fallback version)
-builder.Services.AddHealthChecks().AddCheck("Basic", () => HealthCheckResult.Healthy("Service is running"));
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-app.UseStaticFiles(new StaticFileOptions {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")
-    ),
-    RequestPath = ""
-});
-
-// Enable CORS for frontend
-app.UseCors("AllowFrontend");
-
-// Global exception handling middleware
-app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-// Map health check endpoint
-app.MapHealthChecks("/health");
-
-// Fallback 404 route with JSON
-app.Use(async (context, next) =>
-{
-    await next();
-    if (context.Response.StatusCode == 404 && !context.Response.HasStarted)
-    {
-        context.Response.ContentType = "application/json";
-        await context.Response.WriteAsync("{ \"error\": \"Endpoint not found\" }");
-    }
-});
-
-// Seed initial data
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<EmployeeDbContext>();
-
-    // Smart DB seeding - Add default admin only if it doesn't exist
-    if (!context.Employees.Any(e => e.Username == "admin"))
-    {
-        context.Employees.Add(new EmployeeManagement.Models.Employee
-        {
-            Username = "admin",
-            Email = "admin@example.com",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
-            FirstName = "Admin",
-            LastName = "User",
-            Department = "Administration",
-            Position = "Administrator",
-            Salary = 0,
-            HireDate = DateTime.UtcNow,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            IsActive = true
+                policyBuilder.WithOrigins("http://127.0.0.1:5500")
+                             .AllowAnyHeader()
+                             .AllowAnyMethod()
+                             .AllowCredentials();
+            });
         });
-        context.SaveChanges();
+
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Employee Management API", Version = "v1" });
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = "Enter: Bearer {your JWT token}\n\nExample: Bearer eyJhbGciOiJIUzI1NiIs...",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    new string[] {}
+                }
+            });
+        });
+
+        builder.Services.AddDbContext<EmployeeDbContext>(options =>
+            options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+            ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
+
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                    ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]))
+                };
+            });
+
+        builder.Services.AddAuthorization();
+        builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+        builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Logging.ClearProviders();
+        builder.Logging.AddConsole();
+        builder.Logging.AddDebug();
+        builder.Services.AddHealthChecks().AddCheck("Basic", () => HealthCheckResult.Healthy("Service is running"));
     }
 
-    // ✅ Test database connection and show name
-    try
+    public void ConfigureMiddleware()
     {
-        var canConnect = context.Database.CanConnect();
-        var dbName = context.Database.GetDbConnection().Database;
+        if (_app.Environment.IsDevelopment())
+        {
+            _app.UseSwagger();
+            _app.UseSwaggerUI();
+        }
 
-        if (canConnect)
+        _app.UseHttpsRedirection();
+        _app.UseStaticFiles(new StaticFileOptions
         {
-            Console.WriteLine($"✅ Connected successfully to database: {dbName}");
-        }
-        else
+            FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
+            RequestPath = ""
+        });
+
+        _app.UseCors("AllowFrontend");
+        _app.UseMiddleware<ExceptionHandlingMiddleware>();
+        _app.UseAuthentication();
+        _app.UseAuthorization();
+        _app.MapControllers();
+        _app.MapHealthChecks("/health");
+        _app.Use(async (context, next) =>
         {
-            Console.WriteLine($"❌ Failed to connect to database: {dbName}");
-        }
+            await next();
+            if (context.Response.StatusCode == 404 && !context.Response.HasStarted)
+            {
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync("{ \"error\": \"Endpoint not found\" }");
+            }
+        });
     }
-    catch (Exception ex)
+
+    public void SeedData()
     {
-        Console.WriteLine($"❌ Exception while checking database connection: {ex.Message}");
+        using (var scope = _app.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<EmployeeDbContext>();
+
+            if (!context.Employees.Any(e => e.Username == "admin"))
+            {
+                context.Employees.Add(new EmployeeManagement.Models.Employee
+                {
+                    Username = "admin",
+                    Email = "admin@example.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
+                    FirstName = "Admin",
+                    LastName = "User",
+                    Department = "Administration",
+                    Position = "Administrator",
+                    Salary = 0,
+                    HireDate = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsActive = true
+                });
+                context.SaveChanges();
+            }
+
+            try
+            {
+                var canConnect = context.Database.CanConnect();
+                var dbName = context.Database.GetDbConnection().Database;
+
+                if (canConnect)
+                {
+                    Console.WriteLine($"✅ Connected successfully to database: {dbName}");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ Failed to connect to database: {dbName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Exception while checking database connection: {ex.Message}");
+            }
+        }
     }
 }
+
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+var employeeManagementApp = new EmployeeManagementApp(app);
+
+employeeManagementApp.ConfigureServices(builder);
+employeeManagementApp.ConfigureMiddleware();
+employeeManagementApp.SeedData();
 
 app.Run();
 // Run the application
