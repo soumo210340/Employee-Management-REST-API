@@ -25,10 +25,32 @@ namespace EmployeeManagement.Services
 
         public async Task<string> LoginAsync(LoginDto loginDto)
         {
+            Console.WriteLine($"🔍 Attempting login for user: {loginDto.Username}");
+            
             var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Username == loginDto.Username);
-            if (employee == null || !employee.IsActive || !BCrypt.Net.BCrypt.Verify(loginDto.Password, employee.PasswordHash))
+            
+            if (employee == null)
+            {
+                Console.WriteLine($"❌ User not found: {loginDto.Username}");
                 return string.Empty;
+            }
+            
+            if (!employee.IsActive)
+            {
+                Console.WriteLine($"❌ User account is not active: {loginDto.Username}");
+                return string.Empty;
+            }
+            
+            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, employee.PasswordHash);
+            if (!isPasswordValid)
+            {
+                Console.WriteLine($"❌ Invalid password for user: {loginDto.Username}");
+                return string.Empty;
+            }
+            
+            Console.WriteLine($"✅ Valid credentials for user: {loginDto.Username}");
             var token = GenerateJwtToken(employee);
+            Console.WriteLine($"🔑 Generated JWT token for user: {loginDto.Username}");
             return token;
         }
 
@@ -50,7 +72,8 @@ namespace EmployeeManagement.Services
                 HireDate = DateTime.UtcNow,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                IsActive = true
+                IsActive = true,
+                Role = registerDto.Role ?? "User"
             };
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
@@ -71,7 +94,7 @@ namespace EmployeeManagement.Services
             {
                 new Claim(ClaimTypes.NameIdentifier, employee.Id.ToString()),
                 new Claim(ClaimTypes.Name, employee.Username ?? string.Empty),
-                new Claim(ClaimTypes.Role, "Admin")
+                new Claim(ClaimTypes.Role, employee.Role ?? "User")
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));

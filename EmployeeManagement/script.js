@@ -31,7 +31,11 @@ async function login() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
-        if (!res.ok) throw new Error('Login failed');
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error('Login failed:', errorText);
+            throw new Error('Login failed');
+        }
         const data = await res.json();
         jwtToken = data.token;
         console.log("Logged in with token:", jwtToken);
@@ -52,7 +56,11 @@ async function register() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
-        if (!res.ok) throw new Error('Registration failed');
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error('Registration failed:', errorText);
+            throw new Error('Registration failed');
+        }
         showLogin();
     } catch (err) {
         errorDiv.textContent = 'Registration failed. Try a different username.';
@@ -65,6 +73,7 @@ document.getElementById('add-employee-form').addEventListener('submit', async fu
     const email = document.getElementById('emp-email').value;
     const department = document.getElementById('emp-department').value;
     const position = document.getElementById('emp-position').value;
+    const role = document.getElementById('emp-role').value; // Get the selected role
     const errorDiv = document.getElementById('employee-error');
     errorDiv.textContent = '';
     try {
@@ -74,7 +83,7 @@ document.getElementById('add-employee-form').addEventListener('submit', async fu
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${jwtToken}`
             },
-            body: JSON.stringify({ firstName, lastName, email, department, position })
+            body: JSON.stringify({ firstName, lastName, email, department, position, role }) // Include role in the request
         });
         if (!res.ok) throw new Error('Add failed');
         loadEmployees();
@@ -83,39 +92,64 @@ document.getElementById('add-employee-form').addEventListener('submit', async fu
         errorDiv.textContent = 'Failed to add employee.';
     }
 });
+// Utility function to check if JWT token is valid
+function isTokenValid(token) {
+    if (!token) return false;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const now = Math.floor(Date.now() / 1000);
+    return payload.exp > now;
+}
+
+// Ensure token validity before making API calls
+async function fetchWithAuth(url, options = {}) {
+    if (!isTokenValid(jwtToken)) {
+        alert('Session expired. Please log in again.');
+        logout();
+        return;
+    }
+    options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${jwtToken}`
+    };
+    const response = await fetch(url, options);
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error: ${response.status} - ${errorText}`);
+        throw new Error(errorText);
+    }
+    return response;
+}
+
+// Update existing API calls to correctly map backend fields
 async function loadEmployees() {
     const tbody = document.querySelector('#employee-table tbody');
     tbody.innerHTML = '';
     try {
-        const res = await fetch(`${apiBase}/employees`, {
-            headers: { 'Authorization': `Bearer ${jwtToken}` }
-        });
-        if (!res.ok) throw new Error('Load failed');
+        const res = await fetchWithAuth(`${apiBase}/employees`);
         const employees = await res.json();
+        console.log('API Response:', employees); // Debugging log to capture API response
         employees.forEach(emp => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${emp.id}</td>
-                <td>${emp.firstName} ${emp.lastName}</td>
-                <td>${emp.email}</td>
-                <td>${emp.department}</td>
-                <td>${emp.position}</td>
-                <td><button onclick="deleteEmployee(${emp.id})">Delete</button></td>
+                <td>${emp.Id}</td> <!-- Ensure field names match API response -->
+                <td>${emp.FirstName} ${emp.LastName}</td>
+                <td>${emp.Email}</td>
+                <td>${emp.Department}</td>
+                <td>${emp.Position}</td>
+                <td><button onclick="deleteEmployee(${emp.Id})">Delete</button></td>
             `;
             tbody.appendChild(tr);
         });
     } catch (err) {
+        console.error('Error loading employees:', err); // Debugging log for errors
         tbody.innerHTML = '<tr><td colspan="6">Failed to load employees.</td></tr>';
     }
 }
+
 async function deleteEmployee(id) {
     if (!confirm('Delete this employee?')) return;
     try {
-        const res = await fetch(`${apiBase}/employees/${id}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${jwtToken}` }
-        });
-        if (!res.ok) throw new Error('Delete failed');
+        await fetchWithAuth(`${apiBase}/employees/${id}`, { method: 'DELETE' });
         loadEmployees();
     } catch (err) {
         alert('Failed to delete employee.');
@@ -123,8 +157,8 @@ async function deleteEmployee(id) {
 }
 
 class EmployeeManager {
-    constructor(apiUrl) {
-        this.apiUrl = apiUrl;
+    constructor() {
+        this.apiUrl = apiBase; // Use apiBase for consistency
     }
 
     fetchEmployees() {
@@ -157,14 +191,21 @@ class EmployeeManager {
             firstName: document.getElementById('emp-firstname').value,
             lastName: document.getElementById('emp-lastname').value,
             email: document.getElementById('emp-email').value,
+            phone: document.getElementById('emp-phone').value, // Added phone field
             department: document.getElementById('emp-department').value,
-            position: document.getElementById('emp-position').value
+            position: document.getElementById('emp-position').value,
+            salary: parseFloat(document.getElementById('emp-salary').value), // Added salary field
+            hireDate: new Date(document.getElementById('emp-hiredate').value).toISOString(), // Added hireDate field
+            isActive: document.getElementById('emp-isactive').checked, // Added isActive field
+            passwordHash: document.getElementById('emp-password').value, // Added passwordHash field
+            role: document.getElementById('emp-role').value // Role is now mandatory
         };
 
         fetch(`${this.apiUrl}/employees`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwtToken}`
             },
             body: JSON.stringify(employee)
         })
@@ -173,7 +214,8 @@ class EmployeeManager {
                 this.fetchEmployees();
                 document.getElementById('add-employee-form').reset();
             } else {
-                console.error('Error adding employee:', response.statusText);
+                console.error('Error adding employee:', response.status, response.statusText); // Debugging log for response status
+                response.text().then(text => console.error('Response body:', text)); // Debugging log for response body
             }
         })
         .catch(error => console.error('Error adding employee:', error));
@@ -181,7 +223,10 @@ class EmployeeManager {
 
     deleteEmployee(id) {
         fetch(`${this.apiUrl}/employees/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${jwtToken}`
+            }
         })
         .then(response => {
             if (response.ok) {
@@ -194,7 +239,7 @@ class EmployeeManager {
     }
 }
 
-const employeeManager = new EmployeeManager('/api');
+const employeeManager = new EmployeeManager(); // No need to pass apiBase explicitly
 
 document.getElementById('add-employee-form').addEventListener('submit', event => employeeManager.addEmployee(event));
 

@@ -8,6 +8,7 @@ namespace EmployeeManagement.Data
         public EmployeeDbContext(DbContextOptions<EmployeeDbContext> options) : base(options) { }
 
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<LeaveRequest> LeaveRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -26,6 +27,7 @@ namespace EmployeeManagement.Data
                 entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.PasswordHash).IsRequired();
                 entity.HasIndex(e => e.Username).IsUnique();
+                entity.Property(e => e.Role).IsRequired().HasMaxLength(20);
             });
 
             base.OnModelCreating(modelBuilder);

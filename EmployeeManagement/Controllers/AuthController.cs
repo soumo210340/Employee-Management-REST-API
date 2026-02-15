@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using EmployeeManagement.DTOs;
 using EmployeeManagement.Services;
 using System;
@@ -36,6 +37,7 @@ namespace EmployeeManagement.Controllers
         }
 
         [HttpPost("register")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
             try

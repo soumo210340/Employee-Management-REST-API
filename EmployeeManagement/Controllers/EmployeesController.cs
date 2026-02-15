@@ -27,6 +27,7 @@ namespace EmployeeManagement.Controllers
         /// <returns>List of employees.</returns>
         // GET: api/employees
         [HttpGet]
+        [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> GetAllEmployees()
         {
             try
@@ -48,6 +49,7 @@ namespace EmployeeManagement.Controllers
         /// <returns>Employee details or 404 if not found.</returns>
         // GET: api/employees/{id}
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> GetEmployee(int id)
         {
             try
